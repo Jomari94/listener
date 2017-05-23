@@ -38,18 +38,18 @@ io.on('connection', function(socket){
         // join new room, received as function parameter
         socket.join(newroom);
         socket.room = newroom;
-        console.log(socket.room);
-        io.in(socket.room).emit('joined', people[socket.id]);
+        console.log(people[socket.id] + 'connected to' + socket.room);
+        socket.to(socket.room).emit('joined', people[socket.id]);
     });
 
     socket.on('disconnect', function(){
         console.log(people[socket.id] + ' disconnected');
-        io.in(socket.room).emit('leave', people[socket.id]);
+        socket.to(socket.room).emit('leave', people[socket.id]);
         delete people[socket.id];
     });
 
     socket.on('chat message', function(msg){
-      console.log('message: ' + msg);
+        console.log('message: ' + msg);
         io.in(socket.room).emit('chat message', msg);
     });
 });
