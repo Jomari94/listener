@@ -35,10 +35,20 @@ io.on('connection', function(socket){
     socket.on('switchRoom', function(newroom){
         // leave the current room (stored in session)
         socket.leave(socket.room);
+        var connected = [];
+        var room = io.sockets.adapter.rooms[newroom];
+        if (room != undefined) {
+            var room = room.sockets;
+            for (var id in room) {
+                connected.push(people[id]);
+                console.log(connected.length + ' people in room ' + socket.room);
+            }
+            socket.emit('people connected', JSON.stringify(connected));
+        }
         // join new room, received as function parameter
         socket.join(newroom);
         socket.room = newroom;
-        console.log(people[socket.id] + 'connected to' + socket.room);
+        console.log(people[socket.id] + ' connected to ' + socket.room);
         socket.to(socket.room).emit('joined', people[socket.id]);
     });
 
