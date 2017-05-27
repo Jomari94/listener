@@ -35,6 +35,9 @@ io.on('connection', function(socket){
     socket.on('switchRoom', function(newroom){
         // leave the current room (stored in session)
         socket.leave(socket.room);
+        // join new room, received as function parameter
+        socket.join(newroom);
+        socket.room = newroom;
         var connected = [];
         var room = io.sockets.adapter.rooms[newroom];
         if (room != undefined) {
@@ -45,15 +48,21 @@ io.on('connection', function(socket){
             }
             socket.emit('people connected', JSON.stringify(connected));
         }
-        // join new room, received as function parameter
-        socket.join(newroom);
-        socket.room = newroom;
         console.log(people[socket.id] + ' connected to ' + socket.room);
         socket.to(socket.room).emit('joined', people[socket.id]);
     });
 
+    socket.on('typing', function(){
+        socket.to(socket.room).emit('typing', people[socket.id]);
+    });
+
+    socket.on('stop typing', function(){
+        socket.to(socket.room).emit('stop typing', people[socket.id]);
+    });
+
     socket.on('disconnect', function(){
         console.log(people[socket.id] + ' disconnected');
+        socket.to(socket.room).emit('stop typing', people[socket.id]);
         socket.to(socket.room).emit('leave', people[socket.id]);
         delete people[socket.id];
     });
